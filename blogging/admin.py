@@ -19,7 +19,3 @@ class PostAdmin(admin.ModelAdmin):
     inlines = [
         CategoryInline
     ]
-
-
-# admin.site.register(Post)
-# admin.site.register(Category)
