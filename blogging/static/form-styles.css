@@ -1,0 +1,9 @@
+.new-post-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.new-post-header {
+    text-align: center;
+}

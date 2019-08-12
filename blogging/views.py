@@ -1,10 +1,17 @@
-from django.shortcuts import render
+from django import forms
+from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import loader
+from django.utils import timezone
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User, Group
 
-from blogging.models import Post
+from blogging.models import Post, Category
+from rest_framework import viewsets
+from .serializers import PostSerializer, CategorySerializer, UserSerializer, GroupSerializer
+from .forms import MyPostForm
 
-# Create your views here.
+
 def stub_view(request, *args, **kwargs):
     body = "Stub View\n\n"
     if args:
@@ -32,3 +39,36 @@ def detail_view(request, post_id):
         raise Http404
     context = {'post': post}
     return render(request, 'blogging/detail.html', context)
+
+
+@login_required
+def new_post(request):
+    if request.method == "POST":
+        form = MyPostForm(request.POST)
+        if form.is_valid():
+            model_instance = form.save(commit=False)
+            model_instance.author = request.user
+            model_instance.save()
+            return redirect('/')
+    else:
+        form = MyPostForm()
+        return render(request, 'blogging/new_post.html', {'form':form})
+
+
+class PostsViewSet(viewsets.ModelViewSet):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+
+class CategoriesViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all().order_by('-date_joined')
+    serializer_class = UserSerializer
+
+
+class GroupViewSet(viewsets.ModelViewSet):
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
